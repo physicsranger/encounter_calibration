@@ -56,8 +56,11 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_type=True):
         #need to decide if I want to introduce some sort of
         #"trivial" category if we're below the easy boundary
         
+        #get the index where XP_total would be inserted to keep order
+        #and then subtract 1, add small amount to XP_total
+        #to reflect the >= aspect of difficulty boundaries
         difficulty_index=max(difficulty_boundaries[:,1]\
-                                .searchsorted(XP_total)-1,0)
+                                .searchsorted(XP_total+0.005)-1,0)
         
         return XP_total,difficulty_boundaries[diffculty_index,0]
     
