@@ -2,6 +2,11 @@
 #as well as derived classes for the Party and the Enemies
 
 import numpy as np
+from encounter_utils import (
+                     CR_to_XP,
+                     XP_difficulty_by_level,
+                     calculate_difficulty
+                     )
 
 class BattleGroup():
     '''
@@ -35,11 +40,17 @@ class Party(BattleGroup):
         
         self.pc_level=LVL
         self.extras=EXTRAS
-        self.max_extras=EXTRAS
-        self.max_hit_points=self.hit_points
+        
+        #set max values now so we don't forget
+        #and can compare after a 'battle'
+        self.__max_extras=EXTRAS
+        self.__max_hit_points=self.hit_points
 
 class Enemies(BattleGroup):
-    def__init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,NUM_PCS_MOD=1):
+    def__init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,
+      NUM_PCs=5,LVL_PCs=1):
+        #force this for now
+        LVL_PCs=1
         if not  self.valid_difficulty(DIFFICULTY):
             raise ValueError(f'Invalid encounter difficulty {DIFFICULTY}')
         
@@ -47,7 +58,8 @@ class Enemies(BattleGroup):
         
         self.difficulty=DIFFICULTY.lower(NUMBER,ATK,AC,HP)
         self.challenge_ratings=CRs
-        self.num_pcs_modifier=NUM_PCS_MOD
+        self.num_pcs=NUM_PCs
+        self.pc_levels=LVL_PCs
         
         if CRs is None:
             #need to build the monsters randomly
@@ -79,3 +91,5 @@ class Enemies(BattleGroup):
         return DIFFICULTY.lower() in ['easy',
 		    'medium','hard','deadly']
 	
+	def total_exp(self):
+	    
