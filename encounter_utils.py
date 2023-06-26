@@ -13,10 +13,10 @@ CR_to_XP={'0':10,
 
 #for now, we only have values for 1st level
 XP_difficulty_by_level={1:\
-                    {'easy':,
-                    'medium':,
-                    'hard':,
-                    'deadly':}
+                    {'easy':25,
+                    'medium':50,
+                    'hard':75,
+                    'deadly':100}
                     }
 
 def calculate_difficulty(CRs,num_pcs=5,levels=1,return_type=True):
