@@ -8,7 +8,8 @@ import time
 from encounter_utils import (
                     calculate_difficulty,
                     calculate_difficulty_boundaries,
-                    CR_to_XP
+                    CR_to_XP,
+                    CR_ave_HP
                     )
 
 class BattleGroup():
@@ -172,14 +173,52 @@ class Enemies(BattleGroup):
 	    #continue adding as long as we haven't eliminated all
 	    #possible CR values or met the requested number of enemies
 	    while possible_CRs and len(enemies)<num_max:
-	        #do stuff
+	        #randomly select a challenge rating for a possible new enemy
+	        new_enemy=rng.choice(possible_CRs,1)[0]
+	        
+	        #if we have a target difficulty
+	        if self.difficulty is not None:
+    	        #check if that pushes us past the XP_limit
+	            this_XP=calculate_difficulty(enemies+[new_enemy],
+	                                         self.num_pcs,
+	                                         self.pc_levels,
+	                                         return_category=False)
+	        
+    	        #if we're under the limit, add the enemy
+	            if this_XP<XP_limit:
+	             enemies.append(new_enemy)
+	         
+	         #otherwise, remove the new_enemy challenge rating from
+	         #our choices as it will increase the value too much
+	         else:
+	             possible_CRs.remove(new_enemy)
+	        
+	        else:
+	            enemies.append(new_enemy)
 	    
+	    #now finish up and set the total_XP attribute
+	    #and update the difficulty rating if it wasn't specified
+	    self.total_XP,difficulty=calculate_difficulty(enemies,
+	                                             self.num_pcs,
+	                                             self.pc_levels)
+	    	    
+	    self.difficulty=difficulty is self.difficulty is None else \
+	                    self.difficulty
 	    
-	    return
+	    self.challenge_ratings=enemies
+	    
+	    if self.num_members<=0:
+	        self.num_members=len(enemies)
+	    
 	
 	#if HP was not specified, calculate an HP total
 	#based on challenge ratings
-	def calculate_hp()
+	def calculate_hp(self)
+	    if hasattr(self.challenge_ratings):
+	        self.hit_points=sum([CR_ave_HP.get(CR) \
+	                            for CR in challenge_ratings])
 	    
-	    return
+	    else:
+	        self.hit_points=\
+	            self.num_members*CR_ave_HP.get(self.challenge_ratings)
 	    

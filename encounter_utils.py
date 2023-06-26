@@ -19,7 +19,15 @@ XP_difficulty_by_level={1:\
                     'deadly':100}
                     }
 
-def calculate_difficulty(CRs,num_pcs=5,levels=1,return_type=True):
+CR_ave_HP={'0':3.5,
+	               '1/8':21,
+	               '1/4':42.5,
+	               '1/2':60,
+	               '1':78,
+	               '2':93,
+	               '3':108}
+
+def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
     #force this for now
     levels=1
     
@@ -50,7 +58,7 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_type=True):
     
     XP_total*=encounter_mod
     
-    if return_Type:
+    if return_category:
         difficulty_boundaries=calculate_difficulty_boundaries(num_pcs,levels)
         
         #need to decide if I want to introduce some sort of
