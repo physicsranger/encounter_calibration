@@ -27,6 +27,8 @@ CR_ave_HP={'0':3.5,
 	               '2':93,
 	               '3':108}
 
+#will likely want to think of how to check/enforce
+#that CRs should be string or iterable of strings
 def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
     #force this for now
     levels=1
@@ -70,7 +72,7 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
         difficulty_index=max(difficulty_boundaries[:,1]\
                                 .searchsorted(XP_total+0.005)-1,0)
         
-        return XP_total,difficulty_boundaries[diffculty_index,0]
+        return XP_total,difficulty_boundaries[difficulty_index,0]
     
     else:
         return XP_total
@@ -81,7 +83,7 @@ def calculate_difficulty_boundaries(num_pcs=5,levels=1):
     
     boundaries=np.empty((4,2),dtype=object)
     
-    for idx,cat in ['easy','medium','hard','deadly']:
+    for idx,cat in enumerate(['easy','medium','hard','deadly']):
         boundaries[idx][0]=cat
         #if levels is an iterable, num_pcs is ignored
         if hasattr(levels,'__iter__'):

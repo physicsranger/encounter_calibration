@@ -88,7 +88,7 @@ class Enemies(BattleGroup):
         self.num_pcs=NUM_PCs
         self.pc_levels=LVL_PCs
         
-        if CRs is None:
+        if self.challenge_ratings is None or self.num_members<=0:
             #need to build the monsters randomly
             #with logic based on if number is > 0 or = 0
             self.build_encounter(SEED)
@@ -96,7 +96,7 @@ class Enemies(BattleGroup):
         else:
             #do a check on the length of the list
             #and on if the CR level matches the difficulty category
-            if hasattr(CRs,'__iter__'):
+            if hasattr(self.challenge_ratings,'__iter__'):
                 if NUMBER>0 and len(CRs)!=NUMBER:
                     raise ValueError('Mismatch between specified number \
                     of enemies ({NUMBER}) and number of challenge ratings \
@@ -145,7 +145,12 @@ class Enemies(BattleGroup):
 	      else int(time.time()))
 	    
 	    #get the list of possible challenge ratings to choose from
-	    possible_CRs=[key for key in CR_to_XP.keys()]
+	    if self.challenge_ratings is None:
+	        possible_CRs=[key for key in CR_to_XP.keys()]
+	    elif hasattr(self.challenge_ratings,'__iter__'):
+	        possible_CRs=[CR for CR in self.challenge_ratings]
+	    else:
+	        possible_CRs=[self.challenge_ratings]
 	    
 	    #create an empty list to fill
 	    enemies=[]
@@ -207,7 +212,8 @@ class Enemies(BattleGroup):
 	    self.difficulty=difficulty if self.difficulty is None else \
 	                    self.difficulty
 	    
-	    self.challenge_ratings=enemies
+	    self.challenge_ratings=enemies if self.challenge_ratings is None \
+	                    else self.challenge_ratings
 	    
 	    if self.num_members<=0:
 	        self.num_members=len(enemies)
