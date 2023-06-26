@@ -86,7 +86,7 @@ def calculate_difficulty_boundaries(num_pcs=5,levels=1):
         #if levels is an iterable, num_pcs is ignored
         if hasattr(levels,'__iter__'):
             boundaries[idx][1]=sum([XP_difficulty_by_level[lvl][cat] \
-                                for lvl in levels])]])
+                                for lvl in levels])
         
         else:
             boundaries[idx][1]=XP_difficulty_by_level[levels][cat]*num_pcs

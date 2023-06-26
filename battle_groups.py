@@ -63,12 +63,14 @@ class Party(BattleGroup):
         self.__max_hit_points=self.hit_points
 
 class Enemies(BattleGroup):
-    def__init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,
+    def __init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,\
       NUM_PCs=5,LVL_PCs=1,SEED=None):
         #force this for now
         LVL_PCs=1
         
         if DIFFICULTY is None and NUMBER<=0 and CRs is None:
+            raise ValueError('Cannot have non-positive number of enemies, \
+            None-type for challenge ratings, and None-type for difficulty.')
         
         if DIFFICULTY is not None and not self.valid_difficulty(DIFFICULTY):
             raise ValueError(f'Invalid encounter difficulty, "{DIFFICULTY}"')
@@ -132,7 +134,7 @@ class Enemies(BattleGroup):
 	
 	#when no challenge rating info is supplied, build an encounter
 	#based on either difficulty rating and/or number of enemies
-	def build_encounter(self,SEED=None):
+    def build_encounter(self,SEED=None):
 	    if self.num_members<=0 and self.difficulty is None:
 	        raise ValueError('Cannot specify 0 enemies and None type for \
 	        encounter difficulty.')
@@ -158,8 +160,8 @@ class Enemies(BattleGroup):
 	                                                    self.pc_levels)
 	        
 	        #quickly turn it into a dictionary for ease
-	        idx=1 if self.difficulty='easy' else \
-	            2 if self.difficulty='medium' else \
+	        idx=1 if self.difficulty=='easy' else \
+	            2 if self.difficulty=='medium' else \
 	            3
 	        
 	        XP_limit=boundaries[idx][1]
@@ -188,10 +190,10 @@ class Enemies(BattleGroup):
 	            if this_XP<XP_limit:
 	             enemies.append(new_enemy)
 	         
-	         #otherwise, remove the new_enemy challenge rating from
-	         #our choices as it will increase the value too much
-	         else:
-	             possible_CRs.remove(new_enemy)
+	             #otherwise, remove the new_enemy challenge rating from
+	            #our choices as it will increase the value too much
+	            else:
+	                possible_CRs.remove(new_enemy)
 	        
 	        else:
 	            enemies.append(new_enemy)
@@ -202,7 +204,7 @@ class Enemies(BattleGroup):
 	                                             self.num_pcs,
 	                                             self.pc_levels)
 	    	    
-	    self.difficulty=difficulty is self.difficulty is None else \
+	    self.difficulty=difficulty if self.difficulty is None else \
 	                    self.difficulty
 	    
 	    self.challenge_ratings=enemies
@@ -213,12 +215,12 @@ class Enemies(BattleGroup):
 	
 	#if HP was not specified, calculate an HP total
 	#based on challenge ratings
-	def calculate_hp(self)
-	    if hasattr(self.challenge_ratings):
-	        self.hit_points=sum([CR_ave_HP.get(CR) \
+    def calculate_hp(self):
+        if hasattr(self.challenge_ratings):
+            self.hit_points=sum([CR_ave_HP.get(CR) \
 	                            for CR in challenge_ratings])
 	    
-	    else:
+        else:
 	        self.hit_points=\
 	            self.num_members*CR_ave_HP.get(self.challenge_ratings)
 	    

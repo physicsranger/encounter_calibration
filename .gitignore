@@ -1,0 +1,6 @@
+#some basic python stuff
+__pycache__/
+*.pyc
+
+#MAC stuff
+*.DS_Store
