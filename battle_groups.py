@@ -48,7 +48,7 @@ class BattleGroup():
             must be non-negative, calculated HP = {self.hit_points}')
 
 class Party(BattleGroup):
-    def __init__(self,LVL=1,EXTRAS=5,NUMBER=5,ATK=5,AC=13,HP=25/3):
+    def __init__(self,LVL=1,EXTRAS=5,NUMBER=5,ATK=5,AC=13,HP=8.5):
         #force LVL to be 1, but we can remove
         #this later if we add capability
         LVL=1
@@ -61,6 +61,18 @@ class Party(BattleGroup):
         #and can compare after a 'battle'
         self.__max_extras=EXTRAS
         self.__max_hit_points=self.hit_points
+        
+    def current_hit_point_fraction(self):
+        return self.hit_points/self.__max_hit_points
+    
+    def current_extras_fraction(self):
+        return self.extras/self.__max_extras
+    
+    def max_hit_points(self):
+        return self.__max_hit_points
+    
+    def max_extras(self):
+        return self.__max_extras
 
 class Enemies(BattleGroup):
     def __init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,\
