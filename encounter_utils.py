@@ -22,12 +22,12 @@ XP_difficulty_by_level={1:\
                     }
 
 CR_ave_HP={'0':3.5,
-	               '1/8':21,
-	               '1/4':42.5,
-	               '1/2':60,
-	               '1':78,
-	               '2':93,
-	               '3':108}
+	       '1/8':21,
+	       '1/4':42.5,
+	       '1/2':60,
+	       '1':78,
+	       '2':93,
+	       '3':108}
 
 def CR_to_float(CR):
     return reduce(lambda n,d:float(n)/float(d),CR.split('/')) \

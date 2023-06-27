@@ -19,8 +19,8 @@ class BattleGroup():
     '''
     def __init__(self,NUMBER,ATK=None,AC=None,HP=None):
         if NUMBER<0:
-            raise ValueError(f'Number of members must be non-negative \
-            but {NUMBER = } was passsed in')
+            raise ValueError(f'Number of members must be non-negative\
+ but {NUMBER = } was passsed in')
         
         self.num_members=NUMBER
         
@@ -36,8 +36,8 @@ class BattleGroup():
             self.armor_class=AC
         
         if self.armor_class<0:
-            raise ValueError(f'Average armor class of battle group \
-            must be non-negative, calculated AC = {self.armor_class}')
+            raise ValueError(f'Average armor class of battle group\
+ must be non-negative, calculated AC = {self.armor_class}')
         
         if hasattr(HP,'__iter__'):
             self.hit_points=round(sum(HP))
@@ -45,8 +45,8 @@ class BattleGroup():
             self.hit_points=round(NUMBER*HP)
         
         if self.hit_points<0:
-            raise ValueError(f'Total hit points of battle group \
-            must be non-negative, calculated HP = {self.hit_points}')
+            raise ValueError(f'Total hit points of battle group\
+ must be non-negative, calculated HP = {self.hit_points}')
 
 class Party(BattleGroup):
     def __init__(self,LVL=1,EXTRAS=5,NUMBER=5,ATK=5,AC=13,HP=8.5):
@@ -82,8 +82,8 @@ class Enemies(BattleGroup):
         LVL_PCs=1
         
         if DIFFICULTY is None and NUMBER<=0 and CRs is None:
-            raise ValueError('Cannot have non-positive number of enemies, \
-            None-type for challenge ratings, and None-type for difficulty.')
+            raise ValueError('Cannot have non-positive number of enemies,\
+ None-type for challenge ratings, and None-type for difficulty.')
         
         if DIFFICULTY is not None and not self.valid_difficulty(DIFFICULTY):
             raise ValueError(f'Invalid encounter difficulty, "{DIFFICULTY}"')
@@ -111,9 +111,8 @@ class Enemies(BattleGroup):
             #and on if the CR level matches the difficulty category
             if hasattr(self.challenge_ratings,'__iter__'):
                 if NUMBER>0 and len(CRs)!=NUMBER:
-                    raise ValueError('Mismatch between specified number \
-                    of enemies ({NUMBER}) and number of challenge ratings \
-                    passed in ({len(CRs)}).')
+                    raise ValueError('Mismatch between specified number\
+ of enemies ({NUMBER}) and number of challenge ratings passed in ({len(CRs)}).')
                 
                 else:
                     #the CRs variable should tell us
@@ -128,9 +127,9 @@ class Enemies(BattleGroup):
             #make sure that the calculated difficulty matches
             #what the user requested, if they did
             if self.difficulty is not None and difficulty_cat!=self.difficulty:
-                raise ValueError(f'Provided inputs give encounter difficulty of \
-                "{difficulty_cat}", which does not match specified difficulty of \
-                "{self.difficulty}".')
+                raise ValueError(f'Provided inputs give encounter difficulty of\
+ "{difficulty_cat}", which does not match specified difficulty\
+  of "{self.difficulty}".')
         
         #update the object variable, if necessary
         self.difficulty=difficulty_cat if self.difficulty is None \
@@ -142,15 +141,14 @@ class Enemies(BattleGroup):
         	
 
     def valid_difficulty(self,DIFFICULTY):
-        return DIFFICULTY.lower() in ['easy',
-		    'medium','hard','deadly']
+        return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
 	
 	#when no challenge rating info is supplied, build an encounter
 	#based on either difficulty rating and/or number of enemies
     def build_encounter(self,SEED=None):
 	    if self.num_members<=0 and self.difficulty is None:
-	        raise ValueError('Cannot specify 0 enemies and None type for \
-	        encounter difficulty.')
+	        raise ValueError('Cannot specify 0 enemies and None-type for\
+ encounter difficulty.')
 	    
 	    #create a random number generator instance using the
 	    #passed seed or the integer version of current unix timestamp
@@ -191,8 +189,8 @@ class Enemies(BattleGroup):
 	    
 	    #check that the difficulty matches
 	    if self.difficulty!=difficulty_cat:
-	        print(f'Could not meet difficulty {self.difficulty} requirement \
-	        with only {self.num_members} enemies')
+	        print(f'Could not meet difficulty {self.difficulty} requirement\
+ with only {self.num_members} enemies')
 	        return None
 	    
 	    self.difficulty=difficulty if self.difficulty is None else \
