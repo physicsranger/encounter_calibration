@@ -29,6 +29,14 @@ CR_ave_HP={'0':3.5,
 	       '2':93,
 	       '3':108}
 
+CR_ave_DMG={'0':1,
+            '1/8':1.5,
+            '1/4':4.5,
+            '1/2':7,
+            '1':11.5,
+            '2':17.5
+            '3':23.5}
+
 def CR_to_float(CR):
     return reduce(lambda n,d:float(n)/float(d),CR.split('/')) \
       if len(CR)>1 else float(CR)

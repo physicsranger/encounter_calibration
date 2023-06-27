@@ -10,6 +10,7 @@ from encounter_utils import (
                     calculate_difficulty_boundaries,
                     CR_to_XP,
                     CR_ave_HP,
+                    CR_ave_DMG,
                     CR_to_float
                     )
 
@@ -58,11 +59,17 @@ class Party(BattleGroup):
         self.pc_level=LVL
         self.extras=EXTRAS
         
+        self.get_average_damage()
+        
         #set max values now so we don't forget
         #and can compare after a 'battle'
         self.__max_extras=EXTRAS
         self.__max_hit_points=self.hit_points
-        
+    
+    def get_average_damage(self):
+        #allow for future functionality
+        self.average_damage=7
+    
     def current_hit_point_fraction(self):
         return self.hit_points/self.__max_hit_points
     
@@ -136,9 +143,13 @@ class Enemies(BattleGroup):
           else self.difficulty
         
         #now we need to calculate an HP value if it was not specified
-        if not HP>0:
+        if self.hit_points<=0:
             self.calculate_hp()
-        	
+        
+        if self.to_hit<=0:
+            self.calculate_to_hit()
+        
+        self.get_average_damage()
 
     def valid_difficulty(self,DIFFICULTY):
         return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
@@ -270,4 +281,18 @@ class Enemies(BattleGroup):
         else:
 	        self.hit_points=\
 	            self.num_members*CR_ave_HP.get(self.challenge_ratings)
-	    
+	
+	def calculate_to_hit(self):
+	    if hasattr(self.challenge_ratings,'__iter__'):
+	        to_hit=[4 if CR=='3' else 3]
+	        self.to_hit=np.average(to_hit).round(0).astype(int)
+	    else:
+	        self.to_hit=4 if self.challenge_ratings=='3' else 3
+	
+	def get_average_damage(self):
+	    if hasattr(self.challenge_ratings,'__iter__'):
+	        self.average_damage=np.average(\
+	            [CR_ave_DMG.get(CR) for CR in self.challenge_raings])\
+	            .round(0).astype(int)
+	    else:
+	        self.average_damage=CR_ave_DMG.get(self.challenge_ratings)
