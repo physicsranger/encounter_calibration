@@ -13,7 +13,7 @@ class Encounter():
         self.heal_threshold=2*(self.party.hit_points/self.party.num_members)
         
         #allow for setting random seed
-        self.seed=int(time.time() if SEED is None else SEED
+        self.seed=int(time.time()) if SEED is None else SEED
         
         #assign a random number generator to the encounter
         self.rng=np.random.default_rng(seed=self.SEED)
@@ -50,9 +50,9 @@ class Encounter():
         #removed from the battle
         self.combatant_down=np.zeros(len(self.initiative_order))
         
-        round_results{'party_damage':0,
+        round_results={'party_damage':0,
                       'pc_down_threshold':self.party.hit_points/2,
-                      'enemies_down_threshold':self.enemies.hit_points/2
+                      'enemies_down_threshold':self.enemies.hit_points/2,
                       'concluded':False}
         
         while not round_results.get('concluded'):

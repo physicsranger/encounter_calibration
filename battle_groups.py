@@ -282,17 +282,17 @@ class Enemies(BattleGroup):
 	        self.hit_points=\
 	            self.num_members*CR_ave_HP.get(self.challenge_ratings)
 	
-	def calculate_to_hit(self):
-	    if hasattr(self.challenge_ratings,'__iter__'):
-	        to_hit=[4 if CR=='3' else 3]
-	        self.to_hit=np.average(to_hit).round(0).astype(int)
-	    else:
-	        self.to_hit=4 if self.challenge_ratings=='3' else 3
-	
-	def get_average_damage(self):
-	    if hasattr(self.challenge_ratings,'__iter__'):
-	        self.average_damage=np.average(\
-	            [CR_ave_DMG.get(CR) for CR in self.challenge_raings])\
-	            .round(0).astype(int)
-	    else:
-	        self.average_damage=CR_ave_DMG.get(self.challenge_ratings)
+    def calculate_to_hit(self):
+        if hasattr(self.challenge_ratings,'__iter__'):
+            to_hit=[4 if CR=='3' else 3]
+            self.to_hit=np.average(to_hit).round(0).astype(int)
+        else:
+            self.to_hit=4 if self.challenge_ratings=='3' else 3
+    
+    def get_average_damage(self):
+        if hasattr(self.challenge_ratings,'__iter__'):
+            self.average_damage=np.average(\
+                [CR_ave_DMG.get(CR) for CR in self.challenge_raings])\
+                .round(0).astype(int)
+        else:
+            self.average_damage=CR_ave_DMG.get(self.challenge_ratings)
