@@ -77,6 +77,7 @@ class Encounter():
                   self.run_turn(combatant,round_status.get('party_damage'))])
                 
                 #now do stuff to determine if combatant is removed
+                #update thresholds if necessary
                 #and evaluate if we need to end the encounter
         
         
@@ -97,6 +98,12 @@ class Encounter():
                     self.party.hit_points+=5
                     party_damage=0
                     healed=True
+                    
+                    #now check if a PC was down, assume the healing
+                    #got them back up from 0
+                    if self.is_pc_down():
+                        self.pc_back_up()
+                    
                 else:
                     use_extra=self.rng.binomial(1,0.1)
                     self.party.extra-=use_extra
@@ -107,13 +114,17 @@ class Encounter():
             if not healed:        
                 d20=self.rng.randint(1,21)
                     
-                if d20==20:
-                    damage=self.party.average_damage*(1+use_extra)*2
+                ##if d20==20:
+                    ##damage=self.party.average_damage*(1+use_extra)*2
                     
-                elif d20>1 and \
-                  d20+self.party.to_hit>=self.enemies.armor_class:
-                
-                    damage=self.party.average_damage*(1+use_extra)
+                if d20>1 and \
+                  (d20+self.party.to_hit>=self.enemies.armor_class \
+                  or d20==20):
+                    #if meet or beat armor class (or nat 20), a hit
+                    #use average damage, x2 if using an extra and then
+                    #x2 again if natural 20 (yes, this isn't exactly correct)
+                    damage=self.party.average_damage*(1+use_extra)\
+                      *(1+int(d20==20))
                     
                 else:
                     damage=0
@@ -123,6 +134,36 @@ class Encounter():
             return party_damage             
         
         else:
-            #doenemystuff
+            #assume no healing or extras at this level
+            d20=self.rng.randint(1,21)
             
-        return round_status
+            if d20>1 and \
+               (d20+self.enemies.to_hit>=self.party.armor_class \
+               or d20==20):
+               damage=self.enemies.average_damage*(1+int(d20==20))
+            
+            else:
+                damage=0
+            
+            self.party.hit_points-=damage
+            
+            party_damage+=damage
+            
+        return party_damage
+    
+    def is_pc_down(self):
+        #sum initiative_order where combatant_down value is 1
+        #if this is > 0, then at least one downed combatant is a PC
+        return sum(self.initiative_order[self.combatant_down==1])>0
+    
+    def pc_back_up(self):
+        downed_pcs=(self.initiative_order)&(self.combatant_down)
+        downed_pcs_idx=[idx for idx,flag in enumerate(downed_pcs) if flag]
+        
+        #make sure we don't have an empty list
+        if downed_pcs_idx:
+            #randomly select a pc to bring up
+            up_idx=self.rng.choice(downed_pcs_idx,size=1)
+            
+            #set the combatant_down flag to 0 for the newly raised PCs
+            self.combatant_down[up_idx]=0
