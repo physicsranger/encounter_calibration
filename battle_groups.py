@@ -398,7 +398,8 @@ class Enemies(BattleGroup):
         else:
             #do a check on the length of the list
             #and on if the CR level matches the difficulty category
-            if hasattr(self.challenge_ratings,'__iter__'):
+            if hasattr(self.challenge_ratings,'__iter__') and \
+              not isinstance(self.challenge_ratings,str):
                 if NUMBER>0 and len(CRs)!=NUMBER:
                     raise ValueError('Mismatch between specified number\
  of enemies ({NUMBER}) and number of challenge ratings passed in ({len(CRs)}).')
@@ -450,70 +451,71 @@ class Enemies(BattleGroup):
         
         #quick check to make sure at least one of num_members
         #or difficulty is specified with a useful value
-	    if self.num_members<=0 and self.difficulty is None:
-	        raise ValueError('Cannot specify 0 enemies and None-type for\
+        if self.num_members<=0 and self.difficulty is None:
+            raise ValueError('Cannot specify 0 enemies and None-type for\
  encounter difficulty.')
 	    
-	    #create a random number generator instance using the
-	    #passed seed or the integer version of current unix timestamp
-	    rng=np.random.default_rng(seed=SEED if SEED is not None \
-	      else int(time.time()))
+        #create a random number generator instance using the
+        #passed seed or the integer version of current unix timestamp
+        rng=np.random.default_rng(seed=SEED if SEED is not None \
+          else int(time.time()))
 	    
 	    #get the list of possible challenge ratings to choose from
 	    #want it to be a list for ease of manipulation later
-	    if self.challenge_ratings is None:
-	        possible_CRs=[key for key in CR_to_XP.keys()]
+        if self.challenge_ratings is None:
+            possible_CRs=[key for key in CR_to_XP.keys()]
 
-	    elif hasattr(self.challenge_ratings,'__iter__'):
-	        possible_CRs=[CR for CR in self.challenge_ratings]
+        elif hasattr(self.challenge_ratings,'__iter__') and \
+          not isinstance(self.challenge_ratings,str):
+            possible_CRs=[CR for CR in self.challenge_ratings]
 
-	    else:
-	        possible_CRs=[self.challenge_ratings]
+        else:
+            possible_CRs=[self.challenge_ratings]
 	    
 	    #set a boolean variable to control when we exit
 	    #the while loop
-	    success=False
+        success=False
 	    
-	    while not success or not possible_CRs:
+        while not success or not possible_CRs:
 	        #randomly generate a group of enemies
-	        enemies=self._add_enemies(possible_CRs,rng)
+            enemies=self._add_enemies(possible_CRs,rng)
 	    
 	        #calculate the total_XP for the potential group
 	        #update the difficulty rating if it wasn't specified
-	        total_XP,difficulty_cat=calculate_difficulty(enemies,
-	                                             self.num_pcs,
-	                                             self.pc_levels)
+            total_XP,difficulty_cat=calculate_difficulty(enemies,
+                                                 self.num_pcs,
+                                                 self.pc_levels)
 	        
 	        #check that the returned difficulty actually matches
 	        #what is requested, might not happen if we have a high 
 	        #difficulty but low number of enemies, in which case
 	        #we selectively remove the lowest challenge rating and
 	        #try again
-	        if self.difficulty is not None and \
-	          self.difficulty!=difficulty_cat:
-	            low_idx=np.array([CR_to_float(CR) for CR in possible_CRs]).argmin()
-	            possible_CRs.remove(possible_CRs[low_idx])
+            if self.difficulty is not None and \
+              self.difficulty!=difficulty_cat:
+                low_idx=np.array([CR_to_float(CR) for CR in possible_CRs]).argmin()
+                possible_CRs.remove(possible_CRs[low_idx])
 	        
-	        else:
-	            success=True
+            else:
+                success=True
 	    
 	    #with a final group decided on, set the total_XP attribute
-	    self.total_XP=total_XP
+        self.total_XP=total_XP
 	    
 	    #final check that the difficulty matches
-	    if self.difficulty!=difficulty_cat:
-	        print(f'Could not meet difficulty {self.difficulty} requirement\
+        if self.difficulty!=difficulty_cat:
+            print(f'Could not meet difficulty {self.difficulty} requirement\
  with only {self.num_members} enemies')
-	        return None
+            return None
 	    
 	    #update attributes
-	    self.difficulty=difficulty if self.difficulty is None else \
+        self.difficulty=difficulty if self.difficulty is None else \
 	                    self.difficulty
 	    
-	    self.challenge_ratings=enemies if self.challenge_ratings is None \
+        self.challenge_ratings=enemies if self.challenge_ratings is None \
 	                    else self.challenge_ratings
 	    
-	    if self.num_members<=0:
+        if self.num_members<=0:
 	        self.num_members=len(enemies)
 	
     def _add_enemies(self,possible_CRs,rng=None):
@@ -606,7 +608,8 @@ class Enemies(BattleGroup):
         '''
         #if challenge_ratings is a list, iterate through
         #the list and sum the total hit points
-        if hasattr(self.challenge_ratings,'__iter__'):
+        if hasattr(self.challenge_ratings,'__iter__') and \
+          not isinstance(self.challenge_ratings,str):
             self.hit_points=sum([CR_ave_HP.get(CR) \
 	                            for CR in self.challenge_ratings])
 	    
@@ -625,7 +628,8 @@ class Enemies(BattleGroup):
         
         #if challenge_ratings is iterable, iterate through the list
         #and average the result
-        if hasattr(self.challenge_ratings,'__iter__'):
+        if hasattr(self.challenge_ratings,'__iter__') and \
+          not isinstance(self.challenge_ratings,str):
             #with the currently available CR values, the to hit
             #is either +3 or +4 for CR '3'
             to_hit=[4 if CR=='3' else 3]
@@ -644,7 +648,8 @@ class Enemies(BattleGroup):
         
         #if challenge_ratings is iterable, go through and average
         #all the damage values
-        if hasattr(self.challenge_ratings,'__iter__'):
+        if hasattr(self.challenge_ratings,'__iter__') and \
+          not isinstance(self.challenge_ratings,str):
             self.average_damage=np.average(\
                 [CR_ave_DMG.get(CR) for CR in self.challenge_raings])\
                 .round(0).astype(int)

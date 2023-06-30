@@ -16,7 +16,7 @@ class Encounter():
         self.seed=int(time.time()) if SEED is None else SEED
         
         #assign a random number generator to the encounter
-        self.rng=np.random.default_rng(seed=self.SEED)
+        self.rng=np.random.default_rng(seed=self.seed)
         
         if initiative is None:
             self.set_initiative_order()
@@ -38,9 +38,9 @@ class Encounter():
     #function to randomly assign initiative order
     def set_initiative_order(self):
         combatants=np.concatenate([np.ones(self.party.num_members),
-                                   np.zeros(self.enemeis.num_members)])
+                                   np.zeros(self.enemies.num_members)])
         
-        self.initiative_order=rng.choice(combatants,size=combatants.shape,
+        self.initiative_order=self.rng.choice(combatants,size=combatants.shape,
                               replace=False)
     
     #method to run the encounter, calling other methods
@@ -50,6 +50,10 @@ class Encounter():
         #removed from the battle
         self.combatant_down=np.zeros(len(self.initiative_order))
         
+        #create attributes for tracking number of rounds and turns
+        self.num_rounds=0
+        self.num_turns=0
+        
         round_results={'party_damage':0,
                       'pc_down_threshold':self.party.hit_points/2,
                       'enemies_down_threshold':self.enemies.hit_points/2,
@@ -58,6 +62,8 @@ class Encounter():
         while not round_results.get('concluded'):
             
             round_results=self.run_round(round_results)
+            
+            self.num_rounds+=1
         
         #now the encounter is over, anything else to do?
         #let's put everything of note in a dictionary for ease
@@ -80,13 +86,15 @@ class Encounter():
                       'enemies_hp':self.enemies.hit_points,
                       'num_enemies_down':self.num_enemies_down(),
                       'frac_enemies_down':\
-                        self.num_enemies_down()/self.enemies.num_members}
+                        self.num_enemies_down()/self.enemies.num_members,
+                      'num_rounds':self.num_rounds,
+                      'num_turns':self.num_turns}
             
     
     def run_round(self,round_status):
         for idx,combatant in enumerate(self.initiative_order):
             if not self.combatant_down[idx]:
-                round_statuts.update(\
+                round_status.update(\
                   [('party_damage',
                   self.run_turn(combatant,round_status.get('party_damage')))])
                 
@@ -102,13 +110,15 @@ class Encounter():
                 
                 #let's construct a lot of logic to know if we need to
                 #break out of the loop, try to catch all possibilities
-                
-                if self.encounter_over():
-                    break
+            
+            self.num_turns+=1
+            
+            if self.encounter_over():
+                break
         
         round_results={'party_damage':round_status.get('party_damage'),
           'pc_down_threshold':round_status.get('pc_down_threshold'),
-          'enemy_down_threshold':round_status.get('enemy_down_threshold'),
+          'enemies_down_threshold':round_status.get('enemies_down_threshold'),
           'concluded':self.encounter_over()}
         
         return round_results
@@ -131,13 +141,13 @@ class Encounter():
                     
                 else:
                     use_extra=self.rng.binomial(1,0.1)
-                    self.party.extra-=use_extra
+                    self.party.extras-=use_extra
             
             else:
                 use_extra=0
             
             if not healed:        
-                d20=self.rng.randint(1,21)
+                d20=self.rng.integers(1,20,endpoint=True)
                     
                 ##if d20==20:
                     ##damage=self.party.average_damage*(1+use_extra)*2
@@ -160,7 +170,7 @@ class Encounter():
         
         else:
             #assume no healing or extras at this level
-            d20=self.rng.randint(1,21)
+            d20=self.rng.integers(1,20,endpoint=True)
             
             if d20>1 and \
                (d20+self.enemies.to_hit>=self.party.armor_class \
@@ -193,7 +203,7 @@ class Encounter():
         return down_threshold
     
     def down_pc(self):
-        up_pcs=(self.initiative_order)&(~self.combatant_down)
+        up_pcs=(self.initiative_order==1)&(self.combatant_down==0)
         up_pcs_idx=[idx for idx,flag in enumerate(up_pcs) if flag]
         
         #make sure we have a non-empty list
@@ -204,7 +214,7 @@ class Encounter():
             self.combatant_down[down_idx]=1
     
     def down_enemy(self):
-        up_enemies=(self.initiative_order==0)&(~self.combatant_down)
+        up_enemies=(self.initiative_order==0)&(self.combatant_down==0)
         up_enemies_idx=[idx for idx,flag in enumerate(up_enemies) if flag]
         
         #make sure we have a non-empty list
@@ -217,11 +227,13 @@ class Encounter():
     def update_pc_down_threshold(self):
         num_pcs=self.party.num_members-self.num_pcs_down()
         return 0 if num_pcs<=0 else \
+          0 if num_pcs==1 else \
           self.party.hit_points//num_pcs
     
     def update_enemies_down_threshold(self):
         num_enemies=self.enemies.num_members-self.num_enemies_down()
         return 0 if num_enemies<=0 else \
+          0 if num_enemies==1 else \
           self.enemies.hit_points//num_enemies
     
     def num_pcs_down(self):
@@ -231,7 +243,7 @@ class Encounter():
         return sum(self.initiative_order[self.combatant_down==1]==0)
     
     def pc_back_up(self):
-        downed_pcs=(self.initiative_order)&(self.combatant_down)
+        downed_pcs=(self.initiative_order==1)&(self.combatant_down==1)
         downed_pcs_idx=[idx for idx,flag in enumerate(downed_pcs) if flag]
         
         #make sure we don't have an empty list

@@ -132,7 +132,8 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
     
     #get the number of enemies and base sum of XP
     #based on the challenge ratings
-    if hasattr(CRs,'__iter__'):
+    if hasattr(CRs,'__iter__') and \
+      not isinstance(CRs,str):
         num_enemies=len(CRs)
         XP_total=sum([CR_to_XP.get(cr) for cr in CRs])
         
