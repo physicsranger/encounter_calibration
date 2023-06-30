@@ -41,6 +41,9 @@ def CR_to_float(CR):
     return reduce(lambda n,d:float(n)/float(d),CR.split('/')) \
       if len(CR)>1 else float(CR)
 
+def valid_difficulty(DIFFICULTY):
+        return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
+
 #will likely want to think of how to check/enforce
 #that CRs should be string or iterable of strings
 def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
