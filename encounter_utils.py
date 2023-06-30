@@ -5,6 +5,10 @@ import numpy as np
 import time
 from functools import reduce
 
+'''
+look-up dictionary for XP by challenge rating
+'''
+
 CR_to_XP={'0':10,
           '1/8':25,
           '1/4':50,
@@ -13,13 +17,23 @@ CR_to_XP={'0':10,
           '2':450,
           '3':700}
 
-#for now, we only have values for 1st level
+'''
+look=up dictionary for difficulty XP thresholds
+by character level, for a single character,
+currently, only have values for 1st level
+'''
+
 XP_difficulty_by_level={1:\
                     {'easy':25,
                     'medium':50,
                     'hard':75,
                     'deadly':100}
                     }
+
+'''
+look-up dictionary for the average enemy hit points
+based on challenge rating
+'''
 
 CR_ave_HP={'0':3.5,
 	       '1/8':21,
@@ -28,6 +42,11 @@ CR_ave_HP={'0':3.5,
 	       '1':78,
 	       '2':93,
 	       '3':108}
+
+'''
+look-up dictionary for the average enemy damage
+per round based on challenge rating
+'''
 
 CR_ave_DMG={'0':1,
             '1/8':1.5,
@@ -38,18 +57,81 @@ CR_ave_DMG={'0':1,
             '3':23.5}
 
 def CR_to_float(CR):
+    '''
+    function to convert challenge rating string to a
+    float value for tasks such as magnitude comparison
+    (e.g., '1/4' -> 0.25)
+    
+    Parameters
+    ----------
+    CR - str
+        string representation of a challenge rating
+    
+    Returns
+    -------
+    float
+        the float representation of the input challenge
+        rating string
+    '''
+    
+    
     return reduce(lambda n,d:float(n)/float(d),CR.split('/')) \
       if len(CR)>1 else float(CR)
 
 def valid_difficulty(DIFFICULTY):
-        return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
+    '''
+    function to check if a requested encounter difficulty
+    string is valid
+    
+    Parameters
+    ----------
+    DIFFICULTY - str
+        an encounter difficulty
+    
+    Returns
+    -------
+    bool
+        if the input DIFFICULTY is valid
+    '''
+    
+    return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
 
 #will likely want to think of how to check/enforce
 #that CRs should be string or iterable of strings
 def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
+    '''
+    function to calculate the encounter difficulty given challenge rating
+    information, number of PCs, and level(s) of PCs
+    
+    Parameters
+    ----------
+    CRs - list
+        the challenge ratings of enemies in the encounter
+    num_pcs - int
+        the number of PCs for which the encounter difficulty should
+        be calibrated
+    levels - int or list
+        level(s) of PCs for which the encounter difficulty should
+        be calibrated, currently this is forced to be 1 but future
+        updates may allow for higher levels and a mix of values
+    return_category - bool
+        flag to return the categorical, string representation of
+        the calculated encounter difficulty
+    
+    Returns
+    -------
+    float
+        total XP of the encounter, taking into account modifiers
+        based on number of enemies and number of PCs
+    str
+        calculated encounter difficulty category, optional 
+    '''
+    
     #force this for now
     levels=1
     
+    #get the number of enemies and base sum of XP
+    #based on the challenge ratings
     if hasattr(CRs,'__iter__'):
         num_enemies=len(CRs)
         XP_total=sum([CR_to_XP.get(cr) for cr in CRs])
@@ -77,6 +159,9 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
     
     XP_total*=encounter_mod
     
+    #if the user wants the difficulty category, get the boundaries
+    #and return the corresponding string representation with
+    #the total summed and adjusted XP
     if return_category:
         difficulty_boundaries=calculate_difficulty_boundaries(num_pcs,levels)
         
@@ -91,10 +176,31 @@ def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
         
         return XP_total,difficulty_boundaries[difficulty_index,0]
     
+    #otherwise, just return the XP total
     else:
         return XP_total
 
 def calculate_difficulty_boundaries(num_pcs=5,levels=1):
+    '''
+    function to calculate the encounter difficulty XP lower
+    boundaries based on the number of PCs and PC level(s)
+    
+    Parameters
+    ----------
+    num_pcs - int
+        number of PCs for calibrating the encounter difficulty
+        XP boundaries
+    levels - int or list
+        level(s) of PCs for calibrating the encounter difficulty
+        XP boundaries, currently this is forced to 1 but future
+        updates may allow for higher levels and a mix of values
+    
+    Returns
+    -------
+    array
+        a (4,2) array with form [difficulty category,XP_boundary]
+    '''
+    
     #force this for now
     levels=1
     
@@ -102,6 +208,7 @@ def calculate_difficulty_boundaries(num_pcs=5,levels=1):
     
     for idx,cat in enumerate(['easy','medium','hard','deadly']):
         boundaries[idx][0]=cat
+        
         #if levels is an iterable, num_pcs is ignored
         if hasattr(levels,'__iter__'):
             boundaries[idx][1]=sum([XP_difficulty_by_level[lvl][cat] \
