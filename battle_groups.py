@@ -14,11 +14,50 @@ from encounter_utils import (
                     CR_to_float
                     )
 
+###################
+#define base class
+###################
+
 class BattleGroup():
     '''
-    doc string goes here
+    base class to represent a group in a battle/encounter
+    
+    ...
+    
+    Attributes
+    ----------
+    armor_class - int
+        the average armor class value used for all members of
+        the battle group when determining if an attack from a
+        rival group hits
+    hit_points - int
+        the total number of hit points of the battle group,
+        summing over all members
+    num_members - int
+        the number of combatants in the battle group
+    to_hit - int
+        the average to hit bonus used for all members of the battle
+        group when determining if an attack hits a member of a rival
+        group
     '''
+    
     def __init__(self,NUMBER,ATK=None,AC=None,HP=None):
+        '''
+        Parameters
+        ----------
+        NUMBER - int
+            number of members in the battle group
+        ATK - float or list
+            average to hit bonus, or a list of values, to use for
+            all members in an encounter, will be rounded to an int
+        AC - float or list
+            average armor class, or a list of values, to use for
+            all members in an encounter, will be rounded to an int
+        HP - float or list
+            average hit points, or a list of values, for each group
+            member, will be summed and rounded to an int
+        '''
+        
         if NUMBER<0:
             raise ValueError(f'Number of members must be non-negative\
  but {NUMBER = } was passsed in')
@@ -49,8 +88,95 @@ class BattleGroup():
             raise ValueError(f'Total hit points of battle group\
  must be non-negative, calculated HP = {self.hit_points}')
 
+##########################
+#define class for the PCs
+##########################
+
 class Party(BattleGroup):
+    '''
+    class for the player characters (PCs) party, inherits
+    from BattleGroup class
+    
+    ...
+    
+    Attributes
+    ----------
+    average_damage - int
+        The average damage used for all members of the party
+        upon a successful hit
+    extras - int
+        The number of extras available to the party, where
+        an extra represents a spell slot or other 'consumable'
+        which can increase damage or provide healing in battle
+    pc_level - int or list
+        The level(s) of the PCs.  Currently, this will be forced to 1
+        (for first level), but future functionality may include the
+        ability to use higher levels and a mix of different levels
+    <inherited>
+    armor_class - int
+        the average armor class value used for all members of
+        the battle group when determining if an attack from a
+        rival group hits
+    hit_points - int
+        the total number of hit points of the battle group,
+        summing over all members
+    num_members - int
+        the number of combatants in the battle group
+    to_hit - int
+        the average to hit bonus used for all members of the battle
+        group when determining if an attack hits a member of a rival
+        group
+    <private>
+    __max_hit_points - int
+        the maximum hit point value of the party
+    __max_extras - int
+        the maximum number of extras of the party
+    
+    Methods
+    -------
+    current_extras_fraction()
+        a method to return the current fraction of extras remaining
+        to the party, in reference to the maximum number
+    current_hit_point_fraction()
+        a method to return the current fraction of hit points
+        remaining to the party, in reference to the maximum value
+    get_average_damage()
+        a method to assign the average damage attribute for the
+        party, currently a fixed number but future functionality
+        may allow for variation
+    max_extras()
+        a method to access the value of the __max_extras attribute
+    max_hit_points()
+        a method to access the value of the __max_hit_points attribute
+    '''
+    
     def __init__(self,LVL=1,EXTRAS=5,NUMBER=5,ATK=5,AC=13,HP=8.5):
+        '''
+        Parameters
+        ----------
+        LVL - int or list
+            level(s) of the PCs, currently this is forced to a value of
+            1, but future updates may allow for different values and to
+            supply a list with mixed levels
+        EXTRAS - int
+            the total number of extras, e.g., spell slots, items, abilities;
+            which can grant boosts to damage or provide healing
+        NUMBER - int
+            the number of PCs in the party
+        ATK - float or list
+            the average to hit bonus, or a list of values to be
+            averaged, to use for all PCs in an encounter, will be
+            rounded to an int
+        AC - float or list
+            the average armor class, or a list of values to be averaged,
+            to use for all PCs in an encounter, will be rounded to
+            an int
+        HP - float or list
+            the average hit points, or a list of values to be averaged,
+            to be summed and used as the party max hit point total, will
+            be rounded to an int
+        '''
+        
         #force LVL to be 1, but we can remove
         #this later if we add capability
         LVL=1
@@ -67,20 +193,52 @@ class Party(BattleGroup):
         self.__max_hit_points=self.hit_points
     
     def get_average_damage(self):
-        #allow for future functionality
+        '''
+        method to calculate the average damage of the party,
+        currently uses a fixed value but future updates may
+        allow for more variability/customization
+        '''
+        
+        #fixed for now, but set up a method
+        #to allow for future functionality
         self.average_damage=7
     
     def current_hit_point_fraction(self):
+        '''
+        a method to return the current hit point total of
+        the party as a fraction of the maximum total hit points
+        '''
+        
         return self.hit_points/self.__max_hit_points
     
     def current_extras_fraction(self):
+        '''
+        a method to return the current number of extras the 
+        party has left as a fraction of the maximum total
+        number they can have
+        '''
+        
         return self.extras/self.__max_extras
     
     def max_hit_points(self):
+        '''
+        a convenience method to access the value of the
+        __max_hit_points attribute
+        '''
+        
         return self.__max_hit_points
     
     def max_extras(self):
+        '''
+        a convenience method to access the value of the
+        __max_extras attribute
+        '''
+        
         return self.__max_extras
+
+##############################
+#define class for the enemies
+##############################
 
 class Enemies(BattleGroup):
     def __init__(self,DIFFICULTY,NUMBER=0,ATK=3,AC=13,HP=0,CRs=None,\
