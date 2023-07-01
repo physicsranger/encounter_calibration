@@ -74,7 +74,6 @@ def CR_to_float(CR):
         rating string
     '''
     
-    
     return reduce(lambda n,d:float(n)/float(d),CR.split('/')) \
       if len(CR)>1 else float(CR)
 
