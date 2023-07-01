@@ -22,6 +22,7 @@ from pathlib import Path
 
 import time
 import pickle
+import os
 
 def generate_encounter_results(difficulty,output_csv,
                                 num_sims,num_jobs=1,
@@ -72,21 +73,41 @@ def generate_encounter_results(difficulty,output_csv,
         if not valid_challenge_ratings(CRs):
             raise ValueError(f'Invalid challenge rating(s) selection: {CRs}')
     
-    #now setup the inputs for the simulations to run in parallel
+    #now get setup for the simulations to run in parallel
     #dump the things that don't change into a pickled file
     tmp_path=Path.cwd()/'tmp'
+    
+    #if the 'tmp' folder doesn't exist in the current directory
+    #make it and set it for deletion after we're done
     if not tmp_path.exists():
         remove_tmp=True
         tmp_path.mkdir()
     
+    #if the 'tmp' folder does exist, make sure not to delete
+    #it when we're all done
     else:
         remove_tmp=False
     
+    #update the path to be a new pickle file
     tmp_path/='encounter_sims.pkl'
     
+    #dump the things which don't change to the file
     with tmp_path.open('wb') as tmp_file:
-        pickle.dump(num_pcs,tmp_file)
-        pickle.dump(pc_levels,tmp_file)
-        pickle.dump(
+        pickle.dump((num_pcs,pc_levels,num_enemies,CRs),
+                    tmp_file)
+    
+    #make lists of SEEDs to give to each simulation
+    #to avoid duplication and give each the name
+    #of the pickle file
+    rng=np.random.default_rng(seed=SEED \
+      if SEED is not None \
+      else int(time.time()))
+    
+    seeds=[int(time.time()*rng.random_sample()) \
+            for _ in range(num_sims)]
+    
+    sim_files=[str(tmp_path)]*num_sims
+
+    inputs=np.array([seeds,sim_files],dtype=object)
     
     

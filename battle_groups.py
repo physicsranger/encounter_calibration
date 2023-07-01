@@ -562,13 +562,20 @@ class Enemies(BattleGroup):
                 2 if self.difficulty=='medium' else \
                 3
 	        
-            XP_limit=boundaries[idx][1]
+	        #the idx value will give us the upper limit
+	        #unless the encounter is deadly, in which case we'll
+	        #just set it high
+            XP_max_limit=boundaries[idx][1]*3 if \
+                self.difficulty=='deadly' else \
+                boundaries[idx][1]
+            
+            #get the minimum value as the next index down
+            #for medium and hard, 0 for easy, and the actual
+            #idx value for deadly
+            XP_min_limit=0 if idx==1 else \
+                boundaries[idx][1] if self.difficulty=='deadly' else
+                boundaries[idx-1][1]
 	            
-            #for a deadly encounter, this is somewhat open ended
-            #but let's make sure that it isn't more than twice the limit
-            #in case number of enemies was not specified
-            if self.difficulty=='deadly':
-                XP_limit*=2.5
     	
         #continue adding as long as we haven't eliminated all
         #possible CR values or met the requested number of enemies
@@ -585,13 +592,21 @@ class Enemies(BattleGroup):
                                              return_category=False)
 	        
     	        #if we're under the limit, add the enemy
-                if this_XP<XP_limit:
+                if this_XP<XP_max_limit:
                     enemies.append(new_enemy)
 	         
                 #otherwise, remove the new_enemy challenge rating from
                 #our choices as it will increase the value too much
                 else:
                     possible_CRs.remove(new_enemy)
+                
+                #to make sure we don't always max out the
+                #XP for a given difficulty, make it a 50/50 chance
+                #that we exit early unless we have not met the
+                #desired number of enemies (if specified)
+                if this_XP>=XP_min_limit and this_XP<XP_max_limit \
+                  and self.num_members<=0 and rng.binomial(1,0.5):
+                  break
                 
             else:
                 enemies.append(new_enemy)
