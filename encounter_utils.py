@@ -95,6 +95,30 @@ def valid_difficulty(DIFFICULTY):
     
     return DIFFICULTY.lower() in ['easy','medium','hard','deadly']
 
+def valid_challenge_ratings(CRs):
+    '''
+    function to check validity of requested challenge rating(s)
+    
+    Parameters
+    ----------
+    CRs - str or list
+        a challenge rating string or list of strings
+    
+    Returns
+    -------
+    bool
+        Flag indicating validity of input challenge rating(s)
+    '''
+    
+    #if the input is a single CR, check validity
+    if isinstance(CRs,str):
+        return CRs in CR_to_XP.keys()
+    
+    #otherwise, check each element, and see if the sum
+    #indicates that all of the elements are valid
+    else:
+        return sum([cr in CR_to_XP.keys() for cr in CRs])==len(CRs)
+
 #will likely want to think of how to check/enforce
 #that CRs should be string or iterable of strings
 def calculate_difficulty(CRs,num_pcs=5,levels=1,return_category=True):
