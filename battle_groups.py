@@ -476,11 +476,11 @@ class Enemies(BattleGroup):
 	    #the while loop
         success=False
 	    
-        while not success or not possible_CRs:
+        while not (success or not possible_CRs):
 	        #randomly generate a group of enemies
             enemies=self._add_enemies(possible_CRs,rng)
-	    
-	        #calculate the total_XP for the potential group
+        
+            #calculate the total_XP for the potential group
 	        #update the difficulty rating if it wasn't specified
             total_XP,difficulty_cat=calculate_difficulty(enemies,
                                                  self.num_pcs,
@@ -548,7 +548,7 @@ class Enemies(BattleGroup):
     	
 	    #set a maximum number of enemies to control the while loop
 	    #if num_members is 0, then set an unrealistically high number
-        num_max=self.num_members if self.num_members>0 else 100
+        num_max=self.num_members if self.num_members>0 else 20
 
         #now we want a limiting value based on the requested difficulty
         if self.difficulty is not None:
@@ -568,7 +568,7 @@ class Enemies(BattleGroup):
             #but let's make sure that it isn't more than twice the limit
             #in case number of enemies was not specified
             if self.difficulty=='deadly':
-                XP_limit*=4
+                XP_limit*=2.5
     	
         #continue adding as long as we haven't eliminated all
         #possible CR values or met the requested number of enemies
@@ -651,7 +651,7 @@ class Enemies(BattleGroup):
         if hasattr(self.challenge_ratings,'__iter__') and \
           not isinstance(self.challenge_ratings,str):
             self.average_damage=np.average(\
-                [CR_ave_DMG.get(CR) for CR in self.challenge_raings])\
+                [CR_ave_DMG.get(CR) for CR in self.challenge_ratings])\
                 .round(0).astype(int)
         
         #otherwise, use the corresponding value for the given CR
