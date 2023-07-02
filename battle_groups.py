@@ -573,7 +573,7 @@ class Enemies(BattleGroup):
             #for medium and hard, 0 for easy, and the actual
             #idx value for deadly
             XP_min_limit=0 if idx==1 else \
-                boundaries[idx][1] if self.difficulty=='deadly' else
+                boundaries[idx][1] if self.difficulty=='deadly' else \
                 boundaries[idx-1][1]
 	            
     	

@@ -13,22 +13,17 @@ from battle_groups import (
 
 from encounter import Encounter
 
-from encounter_utils import (
-                    valid_difficulty,
-                    valid_challenge_ratings
-                    )
+from encounter_utils import valid_configuration
 
 from pathlib import Path
 
 import time
-import pickle
 import os
 
-def generate_encounter_results(difficulty,output_csv,
-                                num_sims,num_jobs=1,
-                                num_pcs=5,pc_levels=1,
-                                num_enemies=None,CRs=None,
-                                SEED=None):
+import yaml
+
+def generate_encounter_results(encounter_config,output_csv,
+                               num_sims,num_jobs,SEED=None):
     '''
     function to run many simulations of an encounter of a
     specified difficulty level for a set number of PCs of
@@ -37,9 +32,9 @@ def generate_encounter_results(difficulty,output_csv,
     
     Parameters
     ----------
-    difficulty - str
-        the desired difficulty category: easy, medium,
-        hard, or deadly
+    encounter_config - str or path-like
+        name or path-like object for input yaml configuration
+        file specifying encounter details
     output_csv - str or path-like
         name or path-like object for output CSV file with
         details of each simulated encounter
@@ -47,54 +42,20 @@ def generate_encounter_results(difficulty,output_csv,
         number of simulations to run
     num_jobs - int
         number of parallel jobs to run
-    num_pcs - int
-        number of PCs in each simulation
-    pc_levels - int or list
-        the level(s) of the PCs, currently this is forced to
-        a value of 1, but future updates may allow for higher
-        levels and a mix of values
-    num_enemies - int or None-type
-        optional number of enemies desired in the encounter
-    CRs - str, list, or None-type
-        optional challenge rating for all enemies or a list
-        of possible challenge ratings to use
     SEED - int
         optional seed to instantiate the random number generator
         only needed for if reproducibility is desired
     '''
     
-    #first, make sure a valid difficulty category has been supplied
+    #first, we'll make sure that the configuration exists
+    #and has valid options
+    if not valid_configuration(encounter_config):
+        raise RuntimeError(f'{encounter_config} has invalid parameters')
+    
+    #make sure a valid difficulty category has been supplied
     if not valid_difficulty(difficulty):
         raise ValueError(f'{difficulty = } is not valid, must be one\
  of "easy", "medium", "hard", or "deadly".  Case does not matter.')
-    
-    #if CRs was specified, check that the values are valid
-    if CRs is not None:
-        if not valid_challenge_ratings(CRs):
-            raise ValueError(f'Invalid challenge rating(s) selection: {CRs}')
-    
-    #now get setup for the simulations to run in parallel
-    #dump the things that don't change into a pickled file
-    tmp_path=Path.cwd()/'tmp'
-    
-    #if the 'tmp' folder doesn't exist in the current directory
-    #make it and set it for deletion after we're done
-    if not tmp_path.exists():
-        remove_tmp=True
-        tmp_path.mkdir()
-    
-    #if the 'tmp' folder does exist, make sure not to delete
-    #it when we're all done
-    else:
-        remove_tmp=False
-    
-    #update the path to be a new pickle file
-    tmp_path/='encounter_sims.pkl'
-    
-    #dump the things which don't change to the file
-    with tmp_path.open('wb') as tmp_file:
-        pickle.dump((num_pcs,pc_levels,num_enemies,CRs),
-                    tmp_file)
     
     #make lists of SEEDs to give to each simulation
     #to avoid duplication and give each the name
@@ -106,8 +67,90 @@ def generate_encounter_results(difficulty,output_csv,
     seeds=[int(time.time()*rng.random_sample()) \
             for _ in range(num_sims)]
     
-    sim_files=[str(tmp_path)]*num_sims
+    config_files=[str(encounter_config)]*num_sims
 
-    inputs=np.array([seeds,sim_files],dtype=object)
+    inputs=np.array([seeds,config_files],dtype=object).T
     
+    #create a multiprocessing pool and 'submit the jobs'
+    with mp.Pool(processes=num_jobs) as pool:
+        results=pool.map(simulate_encounter,inputs)
+    
+    #now write the output_csv
+    encounter_df=pd.DataFrame(results)
+    
+    #let's recode the success column to be binary 0/1
+    #instead of True/False which will likely be saved as a string
+    encounter_df.success=encounter_df.success.astype(int,copy=True)
+    
+    #now, write to CSV file
+    encounter_df.to_csv(output_csv,index=False)
+
+
+def simulate_encounter(inputs):
+    '''
+    function to run a simulation of a given encounter
+    and return details of the outcome
+    
+    Parameters
+    ----------
+    inputs - iterable
+        must be of length 2 with the first element being an
+        integer to use as the random seed and the second
+        being the name of a YAML configuration file
+    
+    Returns
+    -------
+    dict
+        Encounter class object summary dictionary
+    '''
+    
+    #get simulation parameters from the pickled file
+    with Path(inputs[1]).open('r') as cfile:
+        config=yaml.safe_load(cfile)
+    
+    #create a random number generator instance using the
+    #input seed value
+    rng=np.random.default_rng(seed=inputs[0])
+    
+    #make the Party BattleGroup of PCs
+    party=Party(LVL=config.get('pcs_level'),
+                EXTRAS=config.get('extras'),
+                NUMBER=config.get('num_pcs'),
+                ATK=config.get('pcs_ATK'),
+                AC=config.get('pcs_AC'),
+                HP=config.get('pcs_HP'))
+    
+    #make the Enemies BattleGroup, give it a SEED
+    #derived from the input SEED
+    enemy_seed=int(inputs[0]*1000*rng.random_sample())
+    
+    CRs=None if config.get('CRs')=='None' else confg.get('CRs')
+    
+    enemies=Enemies(DIFFICULTY=config.get('difficulty'),
+                    NUMBER=config.get('num_enemies'),
+                    ATK=config.get('enemies_ATK'),
+                    AC=config.get('enemies_AC'),
+                    CRs=CRs,
+                    NUM_PCs=config.get('num_pcs'),
+                    LVL_PCs=config.get('pcs_level'),
+                    SEED=enemy_seed)
+    
+    #check for an input initiative order
+    initiative=None if config.get('initiative')=='None' \
+      else config.get('initiative')
+    
+    #create a random seed for the encounter
+    encounter_seed=int(inputs[0]*5000*rng.random_sample())
+    
+    #create the encounter
+    encounter=Encounter(party=party,
+                        enemies=enemies,
+                        SEED=encounter_seed,
+                        initiative=initiative)
+    
+    #run the encounter
+    encounter.run_encounter()
+    
+    #return the summary dictionary
+    return encounter.summary
     

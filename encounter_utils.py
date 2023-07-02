@@ -3,6 +3,7 @@
 
 import numpy as np
 import time
+import yaml
 from functools import reduce
 
 '''
@@ -118,6 +119,118 @@ def valid_challenge_ratings(CRs):
     #indicates that all of the elements are valid
     else:
         return sum([cr in CR_to_XP.keys() for cr in CRs])==len(CRs)
+
+def valid_configuration(config_file):
+    '''
+    function to check if the input config_file exists
+    and if it has all the correct keys
+    
+    Parameters
+    ----------
+    config_file - str or path-like
+        config_file to validate
+    
+    Returns
+    -------
+    bool
+        True or False result of validation
+    '''
+    
+    #first, try to open the file
+    try:
+        with open(config_file,'r') as cfile:
+            config=yaml.safe_load(cfile)
+    
+    except FileNotFoundError:
+        print(f'Could not open {config_file = }')
+        return False
+    
+    #now, make sure it has all the right keys
+    expected_keys=['difficulty','num_pcs','extras',
+                'pcs_levels','pcs_AC','pcs_ATK','pcs_HP',
+                'num_enemies','enemies_AC','enemies_ATK',
+                'enemies_HP','CRs','initiative']
+    
+    #should eventually try to catch other errors
+    
+    return set(expected_keys).issubset(config.keys())
+
+
+def write_configuation(config_file,num_pcs=5,pcs_levels=1,extras=5
+                       pcs_AC=13,pcs_ATK=5,pcs_HP=8.5,difficulty='easy',
+                       num_enemies=0,enemies_AC=3,enemies_ATK=13,
+                       enemies_HP=0,CRs=None,initiative=None):
+    '''
+    function to write a configuration file for running an encounter
+    (e.g, using run_encounters.generate_encounter_results
+    
+    Parameters
+    ----------
+    config_file - str or path-like
+        output configuration file name
+    num_pcs - int
+        number of PCs in Party BattleGroup
+    pcs_levels - int or list
+        level(s) of PCs, currently this is forced to 1, but
+        future updates may allow for higher levels and a mix
+        of values
+    extras - int
+        number of extras (spell slots, limited use 
+        abilities, etc.) for the party
+    pcs_AC - float or list
+        average armor class, or list of values to be averaged,
+        for the PCs, will be rounded
+    pcs_ATK - float or list
+        average to hit bonus, or list of values to be averaged,
+        for the PCs, will be rounded
+    pcs_HP - float or list
+        hit points per PC, or list of values to be summed, to
+        calculate total party hit points, will be rounded
+    difficulty - str or None-type
+        desired encounter difficulty category: 'easy', 'medium',
+        'hard', or 'deadly'
+    num_enemies - int
+        number of enemies in Enemies BattleGroup
+    enemies_AC - float or list
+        average armor class, or list of values to be averaged,
+        for the enemies, will be rounded
+    enemies_ATK - float or list
+        average to hit bonus, or list of values to be averaged,
+        for the enemies, will be rounded
+    enemies_HP - float or list
+        HP per enemy, or list of values to be summed, to
+        calculate the total enemies hit points, will be rounded
+    CRs - str, list, or None-type
+        challenge_rating(s) for enemies, if None-type will be
+        randomly chosen
+    initiative - list
+        turn order as a list of 0s (enemy turns) and 1s (PC turns),
+        if None-type will be randomly decided
+    '''
+    
+    #force this for now
+    pc_levels=1
+    
+    #build the configuration string
+    config_string=f'''
+{difficulty= }
+{num_pcs= }
+{extras= }
+{pcs_levels= }
+{pcs_AC= }
+{pcs_ATK= }
+{pcs_HP= }
+{num_enemies= }
+{enemies_AC= }
+{enemies_ATK= }
+{enemies_HP= }
+{CRs= }
+{initiative= }'''.replace('=',':')
+    
+    #open file in write mode and save
+    with open(config_file,'w') as cfile:
+        config_file.write(config_string)
+        
 
 #will likely want to think of how to check/enforce
 #that CRs should be string or iterable of strings

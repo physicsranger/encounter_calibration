@@ -235,6 +235,14 @@ class Encounter():
         the results and details of a completed encounter
         '''
         
+        #we want to be able to return the challenge ratings
+        #but not comma separated
+        if isinstance(self.enemies.challenge_ratings,str):
+            CRstring=self.enemies.challenge_ratings
+        
+        else:
+            CRstring='_'.join(self.enemies.challenge_ratings)
+        
         #dictionary for ease of access to results
         #may rethink logic for 'success' key value
         self.summary={'party_hp':self.party.hit_points,
@@ -249,8 +257,10 @@ class Encounter():
                       'success':not self.party.hit_points<=0,
                       'enemies_hp':self.enemies.hit_points,
                       'num_enemies_down':self.num_enemies_down(),
+                      'num_enemies':self.enemies.num_members,
                       'frac_enemies_down':\
                         self.num_enemies_down()/self.enemies.num_members,
+                      'CRs':CRstring,
                       'num_rounds':self.num_rounds,
                       'num_turns':self.num_turns}
             
