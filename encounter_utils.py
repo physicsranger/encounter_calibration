@@ -156,7 +156,7 @@ def valid_configuration(config_file):
     return set(expected_keys).issubset(config.keys())
 
 
-def write_configuation(config_file,num_pcs=5,pcs_levels=1,extras=5
+def write_configuration(config_file,num_pcs=5,pcs_levels=1,extras=5,
                        pcs_AC=13,pcs_ATK=5,pcs_HP=8.5,difficulty='easy',
                        num_enemies=0,enemies_AC=3,enemies_ATK=13,
                        enemies_HP=0,CRs=None,initiative=None):
@@ -229,7 +229,7 @@ def write_configuation(config_file,num_pcs=5,pcs_levels=1,extras=5
     
     #open file in write mode and save
     with open(config_file,'w') as cfile:
-        config_file.write(config_string)
+        cfile.write(config_string)
         
 
 #will likely want to think of how to check/enforce
