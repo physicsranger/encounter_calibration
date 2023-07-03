@@ -226,7 +226,7 @@ class Encounter():
                       'enemies_down_threshold':self.enemies.hit_points/2 if \
                         self.enemies.num_members>1 else 0,
                       'concluded':False}
-        
+                
         #start a while loop for the rounds
         while not round_results.get('concluded'):
             
@@ -369,8 +369,10 @@ class Encounter():
             #check if the party has any extras left
             if self.party.extras>0:
                 #if extras are left and party_damage is above
-                #the heal threshold, perform a heal action
-                if party_damage>=self.heal_threshold:
+                #the heal threshold or any PCs are down,
+                #perform a heal action
+                if party_damage>=self.heal_threshold or \
+                 self.num_pcs_down()>0:
                     #reduce number of extras and increase
                     #hit points by average/typical value
                     self.party.extras-=1
@@ -556,9 +558,8 @@ class Encounter():
         #party total HP divided by the number of active
         #PCs, rounded down
         num_pcs=self.party.num_members-self.num_pcs_down()
-        return 0 if num_pcs<=0 else \
-          0 if num_pcs==1 else \
-          self.party.hit_points//num_pcs
+        return 0 if num_pcs<=1 else \
+          self.party.hit_points-self.party.hit_points//num_pcs
     
     def update_enemy_down_threshold(self):
         '''
@@ -568,16 +569,15 @@ class Encounter():
         Returns
         -------
         int
-            the udpated threshold
+            the updated threshold
         '''
         
         #either set the threshold to 0 or the current
         #total enemy HP divided by the number of active
         #enemies, rounded down
         num_enemies=self.enemies.num_members-self.num_enemies_down()
-        return 0 if num_enemies<=0 else \
-          0 if num_enemies==1 else \
-          self.enemies.hit_points//num_enemies
+        return 0 if num_enemies<=1 else \
+          self.enemies.hit_points-self.enemies.hit_points//num_enemies
     
     def num_pcs_down(self):
         '''
@@ -612,7 +612,7 @@ class Encounter():
         #and get the corresponding indices
         downed_pcs=(self.initiative_order==1)&(self.combatant_down==1)
         downed_pcs_idx=[idx for idx,flag in enumerate(downed_pcs) if flag]
-        
+                
         #make sure we don't have an empty list
         if downed_pcs_idx:
             #randomly select a PC to reactivate

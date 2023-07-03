@@ -1,0 +1,14 @@
+
+difficulty: 'hard'
+num_pcs: 5
+extras: 5
+pcs_levels: 1
+pcs_AC: 13
+pcs_ATK: 5
+pcs_HP: 8.5
+num_enemies: 0
+enemies_AC: 3
+enemies_ATK: 13
+enemies_HP: 0
+CRs: None
+initiative: None
