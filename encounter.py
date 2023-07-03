@@ -114,7 +114,7 @@ class Encounter():
     
     '''
     
-    def __init__(self,party,enemies,SEED=None,initiative=None):
+    def __init__(self,party,enemies,SEED=None,RNG=None,initiative=None):
         '''
         Parameters
         ----------
@@ -127,7 +127,10 @@ class Encounter():
         SEED - int or None-type
             seed to instantiate the random number generator, if not
             specified will use the the system unix timestamp cast as
-            an int
+            an int, only used if RNG is None-type
+        RNG - numpy.random.default_rng or None-type
+            random number generator for the battle or a None-type which
+            indicates that one is made using SEED
         initiative - iterable or None-type
             the initiative order, with PC turns represented by 1s and
             enemy turns represented by 0s, if not specified will be
@@ -140,13 +143,18 @@ class Encounter():
         #set an initial heal threshold for the party, when the enemies
         #have done at least this much damage a party member
         #will use an extra, if any are left, to heal
-        self.heal_threshold=2*(self.party.hit_points/self.party.num_members)
+        self.heal_threshold=2*(self.party.hit_points/self.party.num_members) \
+            if self.party.num_members>1 else 0.5*self.party.hit_points
         
-        #allow for setting random seed
-        self.seed=int(time.time()) if SEED is None else SEED
+        if RNG is None:
+            #allow for setting random seed
+            self.seed=int(time.time()) if SEED is None else SEED
         
-        #assign a random number generator to the encounter
-        self.rng=np.random.default_rng(seed=self.seed)
+            #assign a random number generator to the encounter
+            self.rng=np.random.default_rng(seed=self.seed)
+        
+        else:
+            self.rng=RNG
         
         #if not supplied as an input, randomly create
         #the initiative order
@@ -213,8 +221,10 @@ class Encounter():
         #use this to keep track of values and whether or not
         #the encounter is finished
         round_results={'party_damage':0,
-                      'pc_down_threshold':self.party.hit_points/2,
-                      'enemies_down_threshold':self.enemies.hit_points/2,
+                      'pc_down_threshold':self.party.hit_points/2 if \
+                        self.party.num_members>1 else 0,
+                      'enemies_down_threshold':self.enemies.hit_points/2 if \
+                        self.enemies.num_members>1 else 0,
                       'concluded':False}
         
         #start a while loop for the rounds
@@ -261,6 +271,7 @@ class Encounter():
                       'frac_enemies_down':\
                         self.num_enemies_down()/self.enemies.num_members,
                       'CRs':CRstring,
+                      'totalXP':self.enemies.total_XP,
                       'num_rounds':self.num_rounds,
                       'num_turns':self.num_turns}
             

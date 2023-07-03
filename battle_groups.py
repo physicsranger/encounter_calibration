@@ -274,7 +274,7 @@ class Enemies(BattleGroup):
         rating is to be calculated/compared against, currently this
         is forced to be 1, but future updates may add functionality for
         higher levels and a mix of levels
-    total_xp - float
+    total_XP - float
         the total experience points of the encounter, incorporating
         challenge_ratings and modifiers which depend on the
         num_pcs and num_members values

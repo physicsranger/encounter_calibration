@@ -13,7 +13,10 @@ from battle_groups import (
 
 from encounter import Encounter
 
-from encounter_utils import valid_configuration
+from encounter_utils import (
+                    valid_configuration,
+                    valid_difficulty
+                    )
 
 from pathlib import Path
 
@@ -52,8 +55,11 @@ def generate_encounter_results(encounter_config,output_csv,
     if not valid_configuration(encounter_config):
         raise RuntimeError(f'{encounter_config} has invalid parameters')
     
+    with open(encounter_config,'r') as cfile:
+        config=yaml.safe_load(cfile)
+    
     #make sure a valid difficulty category has been supplied
-    if not valid_difficulty(difficulty):
+    if not valid_difficulty(config['difficulty']):
         raise ValueError(f'{difficulty = } is not valid, must be one\
  of "easy", "medium", "hard", or "deadly".  Case does not matter.')
     
@@ -64,7 +70,7 @@ def generate_encounter_results(encounter_config,output_csv,
       if SEED is not None \
       else int(time.time()))
     
-    seeds=[int(time.time()*rng.random_sample()) \
+    seeds=[int(time.time()*rng.random()) \
             for _ in range(num_sims)]
     
     config_files=[str(encounter_config)]*num_sims
@@ -122,7 +128,7 @@ def simulate_encounter(inputs):
     
     #make the Enemies BattleGroup, give it a SEED
     #derived from the input SEED
-    enemy_seed=int(inputs[0]*1000*rng.random_sample())
+    enemy_seed=int(inputs[0]*1000*rng.random())
     
     CRs=None if config.get('CRs')=='None' else confg.get('CRs')
     
@@ -139,13 +145,14 @@ def simulate_encounter(inputs):
     initiative=None if config.get('initiative')=='None' \
       else config.get('initiative')
     
-    #create a random seed for the encounter
-    encounter_seed=int(inputs[0]*5000*rng.random_sample())
+    ###create a random seed for the encounter
+    ##encounter_seed=int(inputs[0]*5000*rng.random())
     
     #create the encounter
     encounter=Encounter(party=party,
                         enemies=enemies,
-                        SEED=encounter_seed,
+                        SEED=None,
+                        RNG=rng,
                         initiative=initiative)
     
     #run the encounter
