@@ -4,3 +4,7 @@ __pycache__/
 
 #MAC stuff
 *.DS_Store
+
+#notebook stuff
+.jupyter
+.ipynb_checkpoints
