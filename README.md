@@ -4,6 +4,8 @@ This repo is a set of scripts, simulated data, and results of analyzing said dat
 
 This was done as a personal project, building out my personal data science portfolio showing off some analysis skills.  The main goal was to have fun in something related to a pastime I enjoy and maybe provide a useful, different way to think about one aspect of the game.  I am not claiming to be an expert or authority on the matter, and not everyone is likely to agree with the simplifications and assumptions I have made.  Constructive feedback is welcomed and encouraged.
 
+To read a summary of initial simulations and analysis, look for a forthcoming blog post on medium, which will be linked here.
+
 ## The Problem
 
 With a roleplaying game such as D&D, someone needs to design encounters for the player characters (PCs) to engage with.  These can be social encounters (convincing a local barkeep to confide important information, etc.) or combat encounters.  When building combat encounters, the game rules include mechanics to create scenarios of varying difficulty.  The mechanics classify encounters as 'easy', 'medium', 'hard', and 'deadly'.  The rules include useful, qualitative descriptions of these difficulty categories, and I'm not going to reproduce them here.  The rules also include some quantitative measures, such as the daily experience point (XP) budget characters of different levels can reasonably expect to manage.
