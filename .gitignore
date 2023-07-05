@@ -6,5 +6,5 @@ __pycache__/
 *.DS_Store
 
 #notebook stuff
-.jupyter
-.ipynb_checkpoints
+.jupyter/
+.ipynb_checkpoints/
