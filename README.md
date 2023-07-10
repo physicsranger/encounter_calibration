@@ -4,7 +4,7 @@ This repo is a set of scripts, simulated data, and results of analyzing said dat
 
 This was done as a personal project, building out my personal data science portfolio showing off some analysis skills.  The main goal was to have fun in something related to a pastime I enjoy and maybe provide a useful, different way to think about one aspect of the game.  I am not claiming to be an expert or authority on the matter, and not everyone is likely to agree with the simplifications and assumptions I have made.  Constructive feedback is welcomed and encouraged.
 
-To read a summary of initial simulations and analysis, look for a forthcoming blog post on medium, which will be linked here.
+To read a summary of initial simulations and analysis, check out my [blog post](https://medium.com/@tyrel.j.johnson/calibrating-d-d-encounter-difficulties-528a584e8f39) on the code.
 
 ## The Problem
 
@@ -121,7 +121,7 @@ Given the assumptions and simplifications I've made, the results of a single enc
 
 The repo includes CSV files with simulated data for 10,000 encounters of each of the 4 difficulty categories.  The included _Evaluate\_SimData_ notebook demonstrates reading in the simulated data and some exploration of the results.
 
-A medium blog post summarizing the findings in that notebook is forthcoming.
+I summarized the findings in that notebook in a [blog post](https://medium.com/@tyrel.j.johnson/calibrating-d-d-encounter-difficulties-528a584e8f39).
 
 Plots generated from that notebook are included in the plots directory.  The output scikit-learn trained StandardScaler, PCA, and LogisticRegression objects from the notebook analysis are included in a pickle file in the outputs directory.
 
